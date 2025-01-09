@@ -1,0 +1,45 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+
+// SEE prisma/DB.md for more documentation on bitwise and etc.
+
+generator client {
+  provider      = "prisma-client-js"
+  binaryTargets = ["windows", "debian-openssl-1.1.x"]
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id            String         @id @unique @default(uuid())// ID
+  name          String
+  password      String?
+  disc_id       String?        @unique
+  avatar        String         @default("default.png") // User avatar
+  auth_token    String         @unique        // Web authentication token
+  balance       Float          @default(1500) // User balance
+  notifications Notification[]                // All notifications
+  notif_message Int            @default(0)   // Bitwise - discord, email, etc.
+  last_spin     String         @default("0")  //   Last spin for tokens
+  games         Game[]                      //   Games played
+  status        Int            @default(0)  //   Bitwise status integer - reported, flagged, etc.
+}
+
+model Notification {
+  id     String @id @unique @default(uuid())
+  users  User[]
+  head   String
+  body   String
+  read   Boolean @default(false)
+}
+
+model Game {
+  id        String @id @unique @default(uuid())
+  users     User[]
+  game_prms String
+  game_msgs String
+}

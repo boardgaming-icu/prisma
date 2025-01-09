@@ -1,0 +1,24 @@
+{
+  "name": "@boardgaming-icu/prisma",
+  "version": "1.0.0",
+  "description": "Prisma client for boardgaming.icu",
+  "main": "index.js",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/boardgaming-icu/prisma.git"
+  },
+  "author": "Matthew S. <me@ocld.cc>",
+  "license": "MPL-2.0",
+  "bugs": {
+    "url": "https://github.com/boardgaming-icu/prisma/issues"
+  },
+  "homepage": "https://github.com/boardgaming-icu/prisma#readme",
+  "devDependencies": {
+    "@prisma/client": "^6.2.1",
+    "prisma": "^6.2.1"
+  },
+  "scripts": {
+    "generate": "npx prisma generate",
+    "postinstall": "npm run generate"
+  }
+}
