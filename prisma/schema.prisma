@@ -23,7 +23,7 @@ model User {
   auth_token    String         @unique        // Web authentication token
   balance       Float          @default(1500) // User balance
   notifications Notification[]                // All notifications
-  notif_message Int            @default(0)   // Bitwise - discord, email, etc.
+  settings      Int            @default(0)   // Bitwise - discord, email, etc.
   last_spin     String         @default("0")  //   Last spin for tokens
   games         Game[]                      //   Games played
   status        Int            @default(0)  //   Bitwise status integer - reported, flagged, etc.
