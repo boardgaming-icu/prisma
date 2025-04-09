@@ -1,12 +1,12 @@
 // This is your Prisma schema file,
 // learn more about it in the docs: https://pris.ly/d/prisma-schema
 
-
 // SEE prisma/DB.md for more documentation on bitwise and etc.
 
 generator client {
   provider      = "prisma-client-js"
   binaryTargets = ["windows", "debian-openssl-1.1.x"]
+  output = "./client"
 }
 
 datasource db {
@@ -15,31 +15,57 @@ datasource db {
 }
 
 model User {
-  id            String         @id @unique @default(uuid())// ID
+  id            String         @id @unique @default(uuid()) // ID
   name          String
   password      String?
   disc_id       String?        @unique
   avatar        String         @default("default.png") // User avatar
-  auth_token    String         @unique        // Web authentication token
-  balance       Float          @default(1500) // User balance
-  notifications Notification[]                // All notifications
-  settings      Int            @default(0)   // Bitwise - discord, email, etc.
-  last_spin     String         @default("0")  //   Last spin for tokens
-  games         Game[]                      //   Games played
-  status        Int            @default(0)  //   Bitwise status integer - reported, flagged, etc.
+  auth_token    String         @unique // Web authentication token
+  auth_expires  String?
+  balance       Float          @default(100) // User balance
+  notifications Notification[] // All notifications
+  settings      Int            @default(0) // Bitwise - discord, email, etc.
+  badges        Int            @default(0) // Bitwise - early access, moderator, developer, etc.
+  last_claim    DateTime? //   Last spin for balance
+  games         Game[] //   Games played
+  status        Int            @default(0) //   Bitwise status integer - reported, flagged, etc.
+  punishments   Punishment[]
+  email         String         @unique
+  verification  String
+  created_at    DateTime       @default(now())
+  last_login    DateTime?
 }
 
 model Notification {
-  id     String @id @unique @default(uuid())
-  users  User[]
-  head   String
-  body   String
-  read   Boolean @default(false)
+  id         String    @id @unique @default(uuid())
+  users      User[]
+  head       String
+  body       String
+  read       Boolean   @default(false)
+  created_at DateTime  @default(now()) // Timestamp when notification was created
+  readAt     DateTime? // Timestamp when notification was read
 }
 
 model Game {
   id        String @id @unique @default(uuid())
   users     User[]
-  game_prms String
-  game_msgs String
+  game_prms Json
+  game_msgs Json
+}
+
+model Punishment {
+  id         String         @id @unique @default(uuid())
+  type       PunishmentType
+  punishment String
+  account    User?          @relation(fields: [account_id], references: [id])
+  account_id String?
+  discord_id String?
+  reason     String
+  expires    DateTime
+  applied    DateTime       @default(now())
+}
+
+enum PunishmentType {
+  DISCORD
+  GAME
 }
