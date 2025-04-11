@@ -3,6 +3,7 @@
   "version": "1.0.0",
   "description": "Prisma client for boardgaming.icu",
   "main": "index.js",
+  "type": "module",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/boardgaming-icu/prisma.git"
