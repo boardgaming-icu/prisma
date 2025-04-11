@@ -20,7 +20,7 @@ model User {
   password      String?
   disc_id       String?        @unique
   avatar        String         @default("default.png") // User avatar
-  auth_token    String         @unique // Web authentication token
+  auth_token    String?        @unique // Web authentication token
   auth_expires  String?
   balance       Float          @default(100) // User balance
   notifications Notification[] // All notifications
@@ -31,7 +31,7 @@ model User {
   status        Int            @default(0) //   Bitwise status integer - reported, flagged, etc.
   punishments   Punishment[]
   email         String         @unique
-  verification  String
+  verification  String         @unique
   created_at    DateTime       @default(now())
   last_login    DateTime?
 }
