@@ -31,7 +31,7 @@ model User {
   status        Int            @default(0) //   Bitwise status integer - reported, flagged, etc.
   punishments   Punishment[]
   email         String         @unique
-  verification  String         @unique
+  verification  String?        @unique
   created_at    DateTime       @default(now())
   last_login    DateTime?
   verified      Boolean        @default(false)
