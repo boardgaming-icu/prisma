@@ -34,6 +34,7 @@ model User {
   verification  String         @unique
   created_at    DateTime       @default(now())
   last_login    DateTime?
+  verified      Boolean        @default(false)
 }
 
 model Notification {
