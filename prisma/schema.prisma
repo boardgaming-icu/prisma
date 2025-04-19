@@ -62,6 +62,7 @@ model Punishment {
   account_id String?
   discord_id String?
   reason     String
+  moderator  String
   expires    DateTime?
   current    Boolean        @default(true)
   applied    DateTime       @default(now())
