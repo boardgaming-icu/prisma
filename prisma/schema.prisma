@@ -55,14 +55,15 @@ model Game {
 }
 
 model Punishment {
-  id         String         @id @unique @default(uuid())
+  id         Int         @id @unique @default(autoincrement())
   type       PunishmentType
   punishment String
   account    User?          @relation(fields: [account_id], references: [id])
   account_id String?
   discord_id String?
   reason     String
-  expires    DateTime
+  expires    DateTime?
+  current    Boolean        @default(true)
   applied    DateTime       @default(now())
 }
 
