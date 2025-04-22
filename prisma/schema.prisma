@@ -6,7 +6,7 @@
 generator client {
   provider      = "prisma-client-js"
   binaryTargets = ["windows", "debian-openssl-1.1.x"]
-  output = "./client"
+  output        = "./client"
 }
 
 datasource db {
@@ -15,47 +15,48 @@ datasource db {
 }
 
 model User {
-  id            String         @id @unique @default(uuid()) // ID
-  name          String         @unique
-  password      String?
-  email         String         @unique
-  avatar        String         @default("default.png") // User avatar
-  auth          Auth?
-  connections   Connection[]
-  notifications Notification[] // All notifications
-  punishments   Punishment[]
-  badges        Badge[]        @relation("UserBadges")
-  rounds        Round[]        // Rounds played
-  last_claim    DateTime?      // Last claim for balance
-  settings      UserSetting[]  // JSON - discord, email, etc.
-  permissions   UserPermission[]
-  status        UserStatus     @default(UNVERIFIED)
-  created_at    DateTime       @default(now())
-  verification  String?        @unique
+  id             String           @id @unique @default(uuid()) // ID
+  name           String           @unique
+  password       String?
+  email          String           @unique
+  avatar         String           @default("default.png") // User avatar
+  auth           Auth?
+  connections    Connection[]
+  notifications  Notification[] // All notifications
+  punishments    Punishment[]
+  badges         Badge[]          @relation("UserBadges")
+  rounds         Round[] // Rounds played
+  last_claim     DateTime? // Last claim for balance
+  settings       UserSetting[] // JSON - discord, email, etc.
+  permissions    UserPermission[]
+  status         UserStatus[]     @default([UNVERIFIED])
+  created_at     DateTime         @default(now())
+  verification   String?          @unique
+  roundInstances RoundPlayer[]
 }
 
 model Permission {
-  id      String  @id @unique @default(uuid())
-  name    String
+  id          String           @id @unique @default(uuid())
+  name        String
   description String?
-  instances UserPermission[]
+  instances   UserPermission[]
 }
 
 model UserPermission {
   user_id       String
   permission_id String
-  user          User      @relation(fields: [user_id], references: [id])
+  user          User       @relation(fields: [user_id], references: [id])
   permission    Permission @relation(fields: [permission_id], references: [id])
 
   @@id([user_id, permission_id]) // Composite primary key for user-permission relationship
 }
 
 model Setting {
-  id          String   @id @unique @default(uuid())
-  name        String   
-  description String?  
-  type        String   
-  instances UserSetting[]
+  id          String        @id @unique @default(uuid())
+  name        String
+  description String?
+  type        String
+  instances   UserSetting[]
 }
 
 model UserSetting {
@@ -68,36 +69,36 @@ model UserSetting {
   @@id([user_id, setting_id]) // Composite primary key
 }
 
-
 enum UserStatus {
   REPORTED
   ACTIVE
   UNVERIFIED
   PUNISHMENT
-  NOPFPORCHAT
   NOPFP
   NOCHAT
+  NONAMECHANGE
 }
 
 model Badge {
-  id            String   @id @unique @default(uuid())
-  name          String
-  description   String?
-  users         User[]   @relation("UserBadges")
+  id          String  @id @unique @default(uuid())
+  name        String
+  description String?
+  users       User[]  @relation("UserBadges")
 }
 
 model Connection {
-  user User @relation(fields: [user_id], references: [id])
-  user_id String
-  platform String
+  user        User   @relation(fields: [user_id], references: [id])
+  user_id     String
+  platform    String
   platform_id String
+
   @@id([user_id, platform])
 }
 
 model Auth {
-  token        String   @id @default(uuid())
-  user_id      String   @unique
-  user         User     @relation(references: [id], fields: [user_id], onDelete: Cascade)
+  token        String    @id @default(uuid())
+  user_id      String    @unique
+  user         User      @relation(references: [id], fields: [user_id], onDelete: Cascade)
   auth_expires DateTime?
   last_login   DateTime?
   totp_key     String?
@@ -114,9 +115,9 @@ model Notification {
 }
 
 model Game {
-  id         String   @id @default(uuid())
-  rounds     Round[]  // List of rounds played at this table
-  created_at DateTime @default(now())
+  id         String    @id @default(uuid())
+  rounds     Round[] // List of rounds played at this table
+  created_at DateTime  @default(now())
   ended_at   DateTime? // Timestamp for when the table is destroyed (when empty)
   table_name String
   game_name  String
@@ -127,29 +128,45 @@ model Game {
 }
 
 model Round {
-  id         String    @id @default(uuid())
-  game  Game @relation(fields: [gameId], references: [id])
-  gameId String
-  users  User[]
-  start_time DateTime  @default(now())
+  id         String        @id @default(uuid())
+  game       Game          @relation(fields: [gameId], references: [id])
+  gameId     String
+  players    RoundPlayer[]
+  start_time DateTime      @default(now())
   end_time   DateTime? // Time when round ended
-  events     RoundEvent[]  // All events in the round, e.g., bet, action, deal, etc.
-  outcome    String   // Round outcome, e.g., who won, final score
+  events     RoundEvent[] // All events in the round, e.g., bet, action, deal, etc.
+  outcome    String // Round outcome, e.g., who won, final score
+  User       User[]
+  payload    Json
 
   @@index([start_time])
   @@index([end_time])
 }
 
+model RoundPlayer {
+  round     Round    @relation(fields: [round_id], references: [id])
+  round_id  String
+  user      User     @relation(fields: [user_id], references: [id])
+  user_id   String
+  seat      Int
+  hand      Json
+  bet       BigInt?
+  return    BigInt?
+  is_winner Boolean  @default(false)
+  joined_at DateTime @default(now())
+
+  @@id([round_id, user_id])
+}
 
 model RoundEvent {
   id        String   @id @default(uuid())
-  round      Round     @relation(fields: [roundId], references: [id])
-  roundId    String
+  round     Round    @relation(fields: [roundId], references: [id])
+  roundId   String
   type      String
   payload   Json
   initiator String?
   target    String?
-  outcome   Boolean  // This will tell analytics if this is outcome to analyse for leaderboards (such as hand winning)
+  outcome   Boolean // This will tell analytics if this is outcome to analyse for leaderboards (such as hand winning)
   timestamp DateTime @default(now())
 
   @@index([roundId])
@@ -158,9 +175,8 @@ model RoundEvent {
   @@index([outcome])
 }
 
-
 model Punishment {
-  id         Int         @id @unique @default(autoincrement())
+  id         Int            @id @unique @default(autoincrement())
   type       PunishmentType
   punishment String
   account    User?          @relation(fields: [account_id], references: [id])
@@ -179,21 +195,22 @@ enum PunishmentType {
 }
 
 model Wallet {
-  user_id  String @id
-  balance BigInt @default(10000) // in 1/100ths of a chip
+  user_id     String        @id
+  balance     BigInt        @default(10000) // in 1/100ths of a chip
   Transaction Transaction[]
 }
 
 model Transaction {
-  id String @id @default(uuid())
-  wallet  Wallet @relation(fields: [user_id], references: [user_id])
-  user_id String
-  amount BigInt // in 1/100ths of a chip
-  type String // 'credit', 'debit', 'refund', 'gift'.
-  reason String
-  created_at DateTime @default(now())
-  reference_id String @unique // optional, for idempotency
-  status TransactionStatus // 'completed' -- could be 'pending', 'failed', etc.
+  id           String            @id @default(uuid())
+  wallet       Wallet            @relation(fields: [user_id], references: [user_id])
+  user_id      String
+  amount       BigInt // in 1/100ths of a chip
+  type         String // 'credit', 'debit', 'refund', 'gift'.
+  reason       String
+  created_at   DateTime          @default(now())
+  reference_id String            @unique // optional, for idempotency
+  status       TransactionStatus // 'completed' -- could be 'pending', 'failed', etc.
+
   @@index([user_id])
   @@index([created_at])
   @@index([reference_id])
