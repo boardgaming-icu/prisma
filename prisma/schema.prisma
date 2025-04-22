@@ -25,7 +25,6 @@ model User {
   notifications  Notification[] // All notifications
   punishments    Punishment[]
   badges         Badge[]          @relation("UserBadges")
-  rounds         Round[] // Rounds played
   last_claim     DateTime? // Last claim for balance
   settings       UserSetting[] // JSON - discord, email, etc.
   permissions    UserPermission[]
@@ -136,7 +135,6 @@ model Round {
   end_time   DateTime? // Time when round ended
   events     RoundEvent[] // All events in the round, e.g., bet, action, deal, etc.
   outcome    String // Round outcome, e.g., who won, final score
-  User       User[]
   payload    Json
 
   @@index([start_time])
