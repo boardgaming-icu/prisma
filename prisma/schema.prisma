@@ -151,7 +151,6 @@ model RoundPlayer {
   bet       BigInt?
   return    BigInt?
   is_winner Boolean  @default(false)
-  joined_at DateTime @default(now())
 
   @@id([round_id, user_id])
 }
