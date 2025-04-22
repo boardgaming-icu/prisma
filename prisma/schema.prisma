@@ -91,7 +91,7 @@ model Connection {
   platform    String
   platform_id String
 
-  @@id([user_id, platform])
+  @@id([platform, platform_id])
 }
 
 model Auth {
