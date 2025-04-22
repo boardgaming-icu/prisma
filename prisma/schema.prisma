@@ -92,6 +92,7 @@ model Connection {
   platform_id String
 
   @@id([platform, platform_id])
+  @@index([user_id])
 }
 
 model Auth {
