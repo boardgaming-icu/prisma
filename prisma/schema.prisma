@@ -194,7 +194,7 @@ enum PunishmentType {
 model Wallet {
   user_id     String        @id
   balance     BigInt        @default(10000) // in 1/100ths of a chip
-  Transaction Transaction[]
+  transaction Transaction[]
 }
 
 model Transaction {
