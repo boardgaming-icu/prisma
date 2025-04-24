@@ -102,7 +102,6 @@ model Auth {
   user         User      @relation(references: [id], fields: [user_id], onDelete: Cascade)
   password     String
   tokens       AuthToken[]
-  auth_expires DateTime?
   last_login   DateTime?
   totp_key     String?
 }
@@ -113,6 +112,7 @@ model AuthToken {
   ip_sha    String
   country   String
   lastUsed  DateTime?
+  expires   DateTime?
   auth Auth @relation(references: [user_id], fields: [user_id], onDelete: Cascade)
 
   @@id([user_id, token])
