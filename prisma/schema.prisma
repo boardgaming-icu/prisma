@@ -17,10 +17,10 @@ datasource db {
 model User {
   id             String           @id @unique @default(uuid()) // ID
   name           String           @unique
-  password       String?
   email          String           @unique
   avatar         String           @default("default.png") // User avatar
   auth           Auth?
+  wallet         Wallet?
   connections    Connection[]
   notifications  Notification[] // All notifications
   punishments    Punishment[]
@@ -86,22 +86,36 @@ model Badge {
 }
 
 model Connection {
-  user        User   @relation(fields: [user_id], references: [id])
+  user        User   @relation(fields: [user_id], references: [id], onDelete: Cascade)
   user_id     String
   platform    String
   platform_id String
+  linked_at   DateTime @default(now())
 
   @@id([platform, platform_id])
   @@index([user_id])
+  @@index([platform_id])
 }
 
 model Auth {
-  token        String    @id @default(uuid())
-  user_id      String    @unique
+  user_id      String    @id
   user         User      @relation(references: [id], fields: [user_id], onDelete: Cascade)
+  password     String
+  tokens       AuthToken[]
   auth_expires DateTime?
   last_login   DateTime?
   totp_key     String?
+}
+
+model AuthToken {
+  user_id   String
+  token     String
+  ip_sha    String
+  country   String
+  lastUsed  DateTime?
+  auth Auth @relation(references: [user_id], fields: [user_id], onDelete: Cascade)
+
+  @@id([user_id, token])
 }
 
 model Notification {
@@ -194,6 +208,7 @@ enum PunishmentType {
 
 model Wallet {
   user_id     String        @id
+  user        User          @relation(references: [id], fields: [user_id])
   balance     BigInt        @default(10000) // in 1/100ths of a chip
   transaction Transaction[]
 }
@@ -203,15 +218,23 @@ model Transaction {
   wallet       Wallet            @relation(fields: [user_id], references: [user_id])
   user_id      String
   amount       BigInt // in 1/100ths of a chip
-  type         String // 'credit', 'debit', 'refund', 'gift'.
+  type         TransactionType // 'credit', 'debit', 'refund', 'gift'.
   reason       String
   created_at   DateTime          @default(now())
   reference_id String            @unique // optional, for idempotency
   status       TransactionStatus // 'completed' -- could be 'pending', 'failed', etc.
+  transferredFrom String?
 
   @@index([user_id])
   @@index([created_at])
   @@index([reference_id])
+}
+
+enum TransactionType {
+  CREDIT
+  DEBIT
+  GIFT
+  TRANSFER
 }
 
 enum TransactionStatus {
