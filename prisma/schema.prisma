@@ -20,9 +20,9 @@ model User {
   email          String           @unique
   avatar         String           @default("default.png") // User avatar
   auth           Auth?
-  wallet         Wallet?
+  wallets        Wallet[]
   connections    Connection[]
-  notifications  Notification[] // All notifications
+  notifications  UserNotification[] // All notifications
   punishments    Punishment[]
   badges         Badge[]          @relation("UserBadges")
   last_claim     DateTime? // Last claim for balance
@@ -44,8 +44,8 @@ model Permission {
 model UserPermission {
   user_id       String
   permission_id String
-  user          User       @relation(fields: [user_id], references: [id])
-  permission    Permission @relation(fields: [permission_id], references: [id])
+  user          User       @relation(fields: [user_id], references: [id], onDelete: Cascade)
+  permission    Permission @relation(fields: [permission_id], references: [id], onDelete: Cascade)
 
   @@id([user_id, permission_id]) // Composite primary key for user-permission relationship
 }
@@ -62,8 +62,8 @@ model UserSetting {
   user_id    String
   setting_id String
   value      String // The value of the setting (e.g., 'true', 'false', 'dark_mode', etc.)
-  user       User    @relation(fields: [user_id], references: [id])
-  setting    Setting @relation(fields: [setting_id], references: [id])
+  user       User    @relation(fields: [user_id], references: [id], onDelete: Cascade)
+  setting    Setting @relation(fields: [setting_id], references: [id], onDelete: Cascade)
 
   @@id([user_id, setting_id]) // Composite primary key
 }
@@ -118,14 +118,22 @@ model AuthToken {
   @@id([user_id, token])
 }
 
+model UserNotification {
+  user_id String
+  noti_id String
+  user    User @relation(fields: [user_id], references: [id], onDelete: Cascade)
+  notification Notification  @relation(fields: [noti_id], references: [id], onDelete: Cascade)
+  read    Boolean @default(false)
+  readAt  DateTime?
+  created DateTime @default(now())
+  @@id([user_id, noti_id])
+}
+
 model Notification {
   id         String    @id @unique @default(uuid())
-  users      User[]
   head       String
   body       String
-  read       Boolean   @default(false)
-  created_at DateTime  @default(now()) // Timestamp when notification was created
-  readAt     DateTime? // Timestamp when notification was read
+  instances  UserNotification[]
 }
 
 model Game {
@@ -207,7 +215,9 @@ enum PunishmentType {
 }
 
 model Wallet {
-  user_id     String        @id
+  wallet_id   String @id
+  user_id     String
+  tournament_id String?
   user        User          @relation(references: [id], fields: [user_id])
   balance     BigInt        @default(10000) // in 1/100ths of a chip
   transaction Transaction[]
@@ -215,8 +225,8 @@ model Wallet {
 
 model Transaction {
   id           String            @id @default(uuid())
-  wallet       Wallet            @relation(fields: [user_id], references: [user_id])
-  user_id      String
+  wallet       Wallet            @relation(fields: [wallet_id], references: [wallet_id])
+  wallet_id    String
   amount       BigInt // in 1/100ths of a chip
   type         TransactionType // 'credit', 'debit', 'refund', 'gift'.
   reason       String
@@ -225,7 +235,7 @@ model Transaction {
   status       TransactionStatus // 'completed' -- could be 'pending', 'failed', etc.
   transferredFrom String?
 
-  @@index([user_id])
+  @@index([wallet_id])
   @@index([created_at])
   @@index([reference_id])
 }
