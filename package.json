@@ -15,8 +15,8 @@
   },
   "homepage": "https://github.com/boardgaming-icu/prisma#readme",
   "devDependencies": {
-    "@prisma/client": "^6.6.0",
-    "prisma": "^6.6.0"
+    "@prisma/client": "6.6.0",
+    "prisma": "6.6.0"
   },
   "scripts": {
     "generate": "npx prisma generate",
